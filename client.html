@@ -15,7 +15,7 @@
       const wsUrl = 'ws://192.168.1.26:8080'        // Update this to the network IP on which the server is running. DoryNode can tell you.
       const hrEl = document.getElementById("hr")
       const timeEl = document.getElementById("time")
-      let connection
+      let connection                                // our WebSocket object
 
       openConnection()
 
@@ -33,7 +33,7 @@
 
       function onConnectionMessage(e) {
         //console.log(`client.html: received socket message: ${e.data}`)
-        let reading = JSON.parse(e.data)
+        let reading = JSON.parse(e.data)  // convert the message from a string back into an object
         hrEl.value = reading.hr
         timeEl.value = reading.time
       }
