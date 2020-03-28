@@ -1,20 +1,40 @@
-<!-- Version: hsdv (heart-rate, socket, DoryNode, view) -->
+<!-- Version: asdv (accelerometer, socket, DoryNode, view) -->
 
 <html>
   <head>
   </head>
   <body>
     <h1>client.html</h1>
-    <label>Heart rate: </label>
-    <input type="text" id="hr" size="4" readonly="readonly">
+    <label>x: </label>
+    <input type="text" id="x" size="5" readonly="readonly">
+    <br/>
+    <label>y: </label>
+    <input type="text" id="y" size="5" readonly="readonly">
+    <br/>
+    <label>z: </label>
+    <input type="text" id="z" size="5" readonly="readonly">
     <br/>
     <label>Time: </label>
-    <input type="text" id="time" size="10" readonly="readonly">
+    <input type="text" id="time" size="12" readonly="readonly">
+
+    <p>
+      <canvas id="canvasXY" width="300" height="300" style="border: solid;"></canvas>
+      <canvas id="canvasZ" width="20" height="300" style="border: solid;"></canvas>
+    </p>
 
     <script>
       const wsUrl = 'ws://192.168.1.26:8080'        // Update this to the network IP on which the server is running. DoryNode can tell you.
-      const hrEl = document.getElementById("hr")
-      const timeEl = document.getElementById("time")
+      const xEl = document.getElementById('x')
+      const yEl = document.getElementById('y')
+      const zEl = document.getElementById('z')
+      const timeEl = document.getElementById('time')
+      const canvasXY = document.getElementById('canvasXY')
+      const contextXY = canvasXY.getContext('2d')
+      contextXY.fillStyle = 'rgb(0, 0, 255)'
+      const canvasZ = document.getElementById('canvasZ')
+      const contextZ = canvasZ.getContext('2d')
+      contextZ.fillStyle = 'rgb(0, 0, 255)'
+
       let connection                                // our WebSocket object
 
       openConnection()
@@ -33,9 +53,29 @@
 
       function onConnectionMessage(e) {
         //console.log(`client.html: received socket message: ${e.data}`)
-        let reading = JSON.parse(e.data)  // convert the message from a string back into an object
-        hrEl.value = reading.hr
-        timeEl.value = reading.time
+        let readingArray = JSON.parse(e.data)  // array of reading objects
+        let lastReading = readingArray[readingArray.length - 1]   // we'll only display the most recent reading
+        let x = lastReading.x
+        let y = lastReading.y
+        let z = lastReading.z
+        let time = lastReading.time
+
+        xEl.value = x
+        yEl.value = y
+        zEl.value = z
+        timeEl.value = time
+
+        contextXY.clearRect(0, 0, canvasXY.width, canvasXY.height)
+        contextZ.clearRect(0, 0, canvasZ.width, canvasZ.height)
+
+        let length = x * 10
+        contextXY.fillRect(150, 140, length, 20)
+
+        length = y * -10
+        contextXY.fillRect(140, 150, 20, length)
+
+        length = (z - 9.8) * -10
+        contextZ.fillRect(0, 150, 20, length)
       }
 
       function onConnectionClose() {
